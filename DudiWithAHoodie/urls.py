@@ -17,6 +17,9 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from accounts import views as account_views
+from manager import views as manager_views
+from django.conf.urls.static import static
+from DudiWithAHoodie import settings
 
 
 urlpatterns = [
@@ -26,4 +29,8 @@ urlpatterns = [
     url(r'^signup/$', account_views.signup, name='signup'),
     url(r'^user/', include('accounts.urls')),
     url(r'^', include('manager.urls')),
+    url(r'^add', manager_views.add_video, name='add_video'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
