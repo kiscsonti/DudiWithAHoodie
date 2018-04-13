@@ -28,8 +28,9 @@ urlpatterns = [
     url(r'^logout/$', auth_views.logout, {'template_name': 'logged_out.html'}, name='logout'),
     url(r'^signup/$', account_views.signup, name='signup'),
     url(r'^user/', include('accounts.urls')),
-    url(r'^', include('manager.urls')),
     url(r'^add', manager_views.add_video, name='add_video'),
+    url(r'^s/', include('manager.urls')),
+    url(r'^', manager_views.bejegyzes, name='hotpage'),
 ]
 
 if settings.DEBUG:

@@ -8,11 +8,13 @@ import shortuuid
 
 now = datetime.datetime.now()
 
+
 @login_required(redirect_field_name=None, login_url='/login')
 def bejegyzes(request):
     html = "<html><body>It is now %s.</body></html>" % now
-    return HttpResponse(html)
+    # TODO: If you want to visit a site that needs you to be logged in, it should redirect you back to where you were after logging in
 
+    return render(request, 'index.html')
 
 
 @login_required
@@ -50,6 +52,10 @@ def add_video(request):
 
     return render(request, 'addvideo.html', {'form': form})
 
+
+def show_video(request, videoID):
+    video = Video.objects.get(id=videoID)
+    return render(request, 'showvideo.html', {'videoObject': video})
 
 
 def generate_video_id():

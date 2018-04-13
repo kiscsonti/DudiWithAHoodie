@@ -6,7 +6,7 @@ class AddVideoForm(forms.Form):
     title = forms.CharField(max_length=500, required=True)
     categories = forms.CharField(max_length=150)
     file = forms.FileField(required=True, help_text='The video file', )
-    is_commentable = forms.BooleanField()
+    is_commentable = forms.BooleanField(required=False, initial=True)
 
     class Meta:
         model = Video
