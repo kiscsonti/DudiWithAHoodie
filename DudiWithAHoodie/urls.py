@@ -30,8 +30,9 @@ urlpatterns = [
     url(r'^user/', include('accounts.urls')),
     url(r'^add', manager_views.add_video, name='add_video'),
     url(r'^s/', include('manager.urls')),
-    url(r'^', manager_views.bejegyzes, name='hotpage'),
+    url(r'^$', manager_views.bejegyzes, name='index'),
+    url(r'^hot', manager_views.bejegyzes, name='hot'),
 ]
-
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

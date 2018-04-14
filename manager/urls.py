@@ -6,4 +6,5 @@ urlpatterns = [
 
     url(r'^$', views.bejegyzes, name="main_page"),
     url(r'^(?P<videoID>.+)$', views.show_video, name='video'),
+    url(r'^search$', views.search, name='search'),
 ]

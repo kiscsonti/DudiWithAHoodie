@@ -62,3 +62,27 @@ def generate_video_id():
     s = shortuuid.uuid()
     print(s)
     return s
+
+
+def search(request):
+    query = request.GET.get('q')
+    help = []
+    if query and query != '':
+        splitted = query.split(' ')
+        for item in splitted:
+            if str(item).startswith('#'):
+                item = item[1:]
+            help.extend(list(VideoKategoria.objects.filter(kat_id__name__contains=item).values('video_id__id')))
+
+            # help = TagToMeme.objects.filter(toTag__name__contains__in=splitted).values('toPost__id')
+            # posts = Post.objects.filter(id=help)
+
+        templist = list()
+        for it in help:
+            templist.append(it['toPost__id'])
+        posts = Post.objects.filter(id__in=templist)
+        if len(posts) == 0:
+            raise Http404("Nincs ilyen tag")
+    else:
+        return redirect('index')
+    return render(request, 'htmls/index.html', {'posts': posts})

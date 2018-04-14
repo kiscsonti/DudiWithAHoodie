@@ -2,6 +2,8 @@ from django.http import HttpResponse
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from manager.models import Video, Playlist
 
 def temp(request):
     html = "<html><body>Very niice</body></html>"
@@ -22,3 +24,10 @@ def signup(request):
     else:
         form = UserCreationForm()
     return render(request, 'signup.html', {'form': form})
+
+
+def profile(request, user_id):
+    user = User.objects.get(username=user_id)
+    videos = Video.objects.filter(user=user)
+    playlists = Playlist.objects.filter(user=user)
+    return render(request, 'profile.html', {'profile': user, 'videos': videos, 'playlists': playlists})

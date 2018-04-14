@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>This is the profile page of {{ profile.username }}</h1>
+
+    {% for video in videos %}
+        <h2>{{ video.title }}</h2>
+        <p>{{ video.filename.url }}</p>
+        <audio controls>
+            <source src="{{ video.filename.url }}" type="audio/mpeg">
+            Your browser does not support the audio tag.
+        </audio>
+    {% endfor %}
+{% endblock %}

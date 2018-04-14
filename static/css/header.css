@@ -1,0 +1,94 @@
+.navbar-inverse{
+    background-color: black;
+}
+
+.post-link{
+    text-decoration: none;
+    color: black;
+}
+
+a:hover, a:focus {
+    color: black;
+    text-decoration: underline;
+}
+
+.row{
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.tag-link:hover, .tag-link:focus{
+    color: #4897db;
+    text-decoration: none;
+}
+
+
+textarea {
+    resize: none;
+}
+
+
+@media all and (max-width: 4000px) {
+    h3 {
+        font-size: 2.6em;
+    }
+
+    p{
+        font-size: 3.5em;
+        font-weight: bold;
+    }
+}
+
+
+@media all and (max-width: 2000px) {
+    h3 {
+        font-size: 2.2em;
+    }
+
+    p{
+        font-size: 2.6em;
+        font-weight: bold;
+    }
+}
+
+@media all and (max-width: 1500px) {
+    h3 {
+        font-size: 1.8em;
+    }
+
+    p{
+        font-size: 1.8em;
+        font-weight: bold;
+    }
+}
+@media all and (max-width: 1000px) {
+    h3 {
+        font-size: 1.5em;
+    }
+
+    p{
+        font-size: 1.4em;
+        font-weight: bold;
+    }
+}
+
+@media all and (max-width: 750px) {
+    h3 {
+        font-size: 1.5em;
+    }
+
+    p{
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+}
+
+@media all and (max-width: 500px) {
+    h3 {
+        font-size: 1em;
+        }
+    p{
+        font-size: 0.6em;
+        font-weight: bold;
+    }
+}

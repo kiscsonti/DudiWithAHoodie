@@ -1,0 +1,49 @@
+.comment-text{
+    font-size: 1em;
+    font-weight: normal;
+}
+
+.comment-user{
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.user-link{
+    text-decoration: none;
+    color: black;
+}
+
+
+.user-link:hover, .user-link:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.relative-helper{
+    position: relative;
+}
+
+.box{
+    position: absolute;
+    left: -25px;
+}
+
+.delete-icon:hover{
+    color: darkred;
+    transition: .5s;
+}
+
+.delete-icon{
+    transition: .5s;
+}
+
+.delete-button{
+  background: none;
+  padding: 0px;
+  border: none;
+}
+
+.commenter-avatar{
+    padding-left: 5px;
+    padding-right: 5px;
+}
