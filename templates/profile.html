@@ -2,13 +2,18 @@
 
 {% block content %}
     <h1>This is the profile page of {{ profile.username }}</h1>
-
-    {% for video in videos %}
-        <h2>{{ video.title }}</h2>
-        <p>{{ video.filename.url }}</p>
-        <audio controls>
-            <source src="{{ video.filename.url }}" type="audio/mpeg">
-            Your browser does not support the audio tag.
-        </audio>
+    <div id="videos">
+    {% for video, views, tags in videos %}
+        <h2><a href="{% url 'video' videoID=video.id%}">{{ video.title }}</a></h2>
+        <h2>Kategóriák: {{ tags }}</h2>
+        <h3>Megtekintés: {{ views }}</h3>
     {% endfor %}
+
+    </div>
+
+    <div id="playlists">
+
+
+
+    </div>
 {% endblock %}

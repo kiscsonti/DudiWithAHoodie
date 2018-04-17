@@ -64,7 +64,7 @@ class Comment(models.Model):
         return self.user.username + ": " + self.video_id.title
 
     class Meta:
-        unique_together = (("user", "video_id"),)
+        unique_together = (("user", "video_id", "create_date", "create_time"),)
 
 
 class VideoKategoria(models.Model):
@@ -82,9 +82,10 @@ class VideoKategoria(models.Model):
 class Watched(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     video_id = models.ForeignKey(Video, on_delete=models.CASCADE)
-    watched_date = models.DateField(auto_now_add=True)
-    watched_time = models.TimeField(auto_now_add=True)
+    watched_date = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.user.username + ": " + self.video_id.title
 
 class Playlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

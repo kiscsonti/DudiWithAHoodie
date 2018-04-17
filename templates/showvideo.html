@@ -3,4 +3,102 @@
 {% block content %}
     <h1>This is the {{ videoObject.title }} videos page</h1>
 
+    <video id="vidi" width="320" height="240" controls onended="videoEnded()">
+      <source src="{{ videoObject.filename.url }}" type="video/mp4">
+    </video>
+
+    <h2><a href="{% url 'profile' user_id=request.user.username %}">{{ owner.username }}</a></h2>
+    <h3 id="viewer_count">Megtekintés: {{ viewCount }}</h3>
+
+    <form id="WatchedVideo" action="{% url 'watched' videoID=videoObject.id userID=user.id %}" method="post">
+    {% csrf_token %}
+    </form>
+
+    {% if owned%}
+    <div>
+        <a href="{% url 'video_edit' videoID=videoObject.id %}">EDIT</a>
+    </div>
+    {% endif %}
+    {% if videoObject.is_commentable %}
+    <div class="text-left">
+
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'video' videoID=videoObject.id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <textarea placeholder="Ide irj kommentet" class="form-control" rows="3" id="comment" name="comment" maxlength="500" ></textarea>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-primary blue">
+                            <i class="fa fa-comment" aria-hidden="true"></i>
+                            Komment
+                        </button>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+
+        {% for comment in comments %}
+            <div class="row">
+                <div class="col-xs-2 col-sm-2 col-md-2 commenter-avatar">
+                    <div class="relative-helper">
+                        <div class="box">
+                            {% if request.user == comment.user or owned or user.is_superuser %}
+                                <form method="post" action="{% url 'video' videoID=videoObject.id %}">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <button type="submit" class="delete-button" name="del" value="{{ comment.id }}">
+                                            <i class="fa fa-trash delete-icon" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-xs-10 col-sm-10 col-md-10">
+                    <a class="user-link" href="{% url 'profile' user_id=comment.user.username %}">
+                        <span class="comment-user">
+                            {{ comment.user.username }}
+                        </span>
+                    </a>
+
+                    <div class="comment-text">{{ comment.content | safe }}</div>
+                    {% if not forloop.last %}
+                        <hr>
+                    {% endif %}
+                </div>
+            </div>
+
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <script type='text/javascript'>
+
+        $(document).ready(function(){
+            $('#vidi').on('ended',function(){
+                console.log('Video has ended!');
+                var user = '{{ videoObject.id }}';
+                var video = '{{ request.user }}';
+                $.ajax({
+                    //url: '{% url "watched_video" %}',
+                    url: 's/ajax/watched_video',
+                    data: {
+                        'video': video,
+                        'user': user
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+
+                        viewer_count.innerText = viewer_count.innerText+1;
+                        alert(viewer_count.innerText)
+                    }
+                });
+            });
+        });
+
+    </script>
 {% endblock %}
+

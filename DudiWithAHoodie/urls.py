@@ -26,12 +26,12 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),
     url(r'^logout/$', auth_views.logout, {'template_name': 'logged_out.html'}, name='logout'),
-    url(r'^signup/$', account_views.signup, name='signup'),
+    url(r'^signup/$', account_views.signup, name='register'),
     url(r'^user/', include('accounts.urls')),
     url(r'^add', manager_views.add_video, name='add_video'),
     url(r'^s/', include('manager.urls')),
-    url(r'^$', manager_views.bejegyzes, name='index'),
-    url(r'^hot', manager_views.bejegyzes, name='hot'),
+    url(r'^$', manager_views.index, name='index'),
+    url(r'^hot', manager_views.hot, name='hot'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
