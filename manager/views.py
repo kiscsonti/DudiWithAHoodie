@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
@@ -17,7 +19,6 @@ now = datetime.now()
 
 @login_required(redirect_field_name=None, login_url='/login')
 def index(request):
-    html = "<html><body>It is now %s.</body></html>" % now
     # TODO: If you want to visit a site that needs you to be logged in, it should redirect you back to where you were after logging in
 
 
@@ -37,7 +38,6 @@ def index(request):
 
 
 def hot(request):
-    html = "<html><body>It is now %s.</body></html>" % now
     # TODO: If you want to visit a site that needs you to be logged in, it should redirect you back to where you were after logging in
     if request.GET.get("Date"):
         date = request.GET.get("Date")
@@ -45,22 +45,25 @@ def hot(request):
         how_many_days = get_days(date)
         if how_many_days == -1:
             #All ág
+            #TODO: SQL command
             video_list = Watched.objects.all()\
                 .values('video_id')\
                 .annotate(total=Count('video_id'))\
-                .order_by('total')
+                .order_by('total').reverse()
         else:
             #Minden más ág (DAY, MONTH, YEAR)
+            #TODO: SQL command
             time_threshold = timezone.now() - timedelta(days=how_many_days)
             video_list = Watched.objects.filter(watched_date__gte=time_threshold)\
                 .values('video_id')\
                 .annotate(total=Count('video_id'))\
-                .order_by('total')
+                .order_by('total').reverse()
     else:
+        #TODO: SQL command
         video_list = Watched.objects.all()\
             .values('video_id')\
             .annotate(total=Count('video_id'))\
-            .order_by('total')
+            .order_by('total').reverse()
     page = request.GET.get('page', 1)
     paginator = Paginator(video_list, 5)
     try:
@@ -71,10 +74,7 @@ def hot(request):
         videos = paginator.page(paginator.num_pages)
 
     all_video_ids = [vidi['video_id']for vidi in videos]
-    print(all_video_ids)
-    combined = get_data_from_video_array(all_video_ids, isIDs=True)
-    for a, b, c in combined:
-        pass
+    combined = get_data_from_video_ids(all_video_ids)
     #TODO: something is buggy here
     return render(request, 'hot.html', {'videos': combined})
 
@@ -86,11 +86,15 @@ def add_video(request):
         if form.is_valid():
             title = form.cleaned_data.get('title')
             file = form.cleaned_data.get('file')
+            leiras = form.cleaned_data.get('description')
+            thumbnail = form.cleaned_data.get('thumbnail')
             commentable = form.cleaned_data.get('is_commentable')
             video = Video(id=generate_video_id(),
                           user=request.user,
                           title=title,
                           filename=file,
+                          description=leiras,
+                          thumbnail=thumbnail,
                           is_commentable=commentable)
             video.save()
 
@@ -116,6 +120,8 @@ def show_video(request, videoID):
 
     video = Video.objects.get(id=videoID)
     owner = video.user
+    if owner == None:
+        owner = "deleted user"
     viewCount = get_watched_counter(videoID)
     owned = (owner == request.user)
     if request.method == 'POST':
@@ -137,26 +143,23 @@ def show_video(request, videoID):
 
 def search(request):
     query = request.GET.get('q')
-    help = []
+    video_set = set()
+    user_set = set()
     if query and query != '':
         splitted = query.split(' ')
         for item in splitted:
-            if str(item).startswith('#'):
-                item = item[1:]
-            help.extend(list(VideoKategoria.objects.filter(kat_id__name__contains=item).values('video_id__id')))
+            video_set.union(list(VideoKategoria.objects.filter(kat_id__name__contains=item).values('video_id')))
+            video_set.union(list(Video.objects.filter(title__contains=item)))
+            user_set.union(list(User.objects.filter(username__contains=item)))
 
-            # help = TagToMeme.objects.filter(toTag__name__contains__in=splitted).values('toPost__id')
-            # posts = Post.objects.filter(id=help)
+            # video_set = TagToMeme.objects.filter(toTag__name__contains__in=splitted).values('toPost__id')
+            # posts = Post.objects.filter(id=video_set)
 
-        templist = list()
-        for it in help:
-            templist.append(it['toPost__id'])
-        posts = Video.objects.filter(id__in=templist)
-        if len(posts) == 0:
-            raise Http404("Nincs ilyen tag")
+        if len(video_set) == 0 and len(user_set) == 0:
+            raise Http404("Nincs ilyen felhasználó, se videó, se kategória")
     else:
         return redirect('index')
-    return render(request, 'index.html', {'posts': posts})
+    return render(request, 'index.html', {'videos': video_set, 'users': user_set})
 
 
 def watched(request, videoID, userID):
@@ -186,6 +189,7 @@ def edit_video(request, videoID):
 
                 video = Video.objects.get(pk=videoID)
                 video.title = form.cleaned_data.get('title')
+                video.description = form.cleaned_data.get('description')
                 video.is_commentable = form.cleaned_data.get('is_commentable')
                 video.save()
 
@@ -197,15 +201,41 @@ def edit_video(request, videoID):
     else:
 
         video = Video.objects.get(pk=videoID)
-        form = EditVideo(initial={'title': video.title, 'is_commentable': video.is_commentable})
+        form = EditVideo(initial={'title': video.title, 'description': video.description, 'is_commentable': video.is_commentable})
 
     return render(request, 'editvideo.html', {'form': form})
 
 from django.views.decorators.csrf import csrf_exempt
 
+
 @csrf_exempt
 def watched_video(request):
-    video = request.GET.get('video', None)
+    if request.method == 'POST':
+        usr = request.POST.get('user')
+        vid = request.POST.get('video')
+        print(usr, vid)
+        response_data = {}
+        usr = User.objects.get(username=usr)
+        vid = Video.objects.get(id=vid)
+
+        w = Watched(user=usr, video_id=vid)
+        w.save()
+
+        response_data['result'] = 'Create post successful!'
+        response_data['postpk'] = usr.pk
+
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json"
+        )
+    else:
+        return HttpResponse(
+            json.dumps({"nothing to see": "this isn't happening"}),
+            content_type="application/json"
+        )
+
+
+    """video = request.GET.get('video', None)
     user = request.GET.get('user', None)
     print(user)
     video = Video.objects.get(id=video)
@@ -215,7 +245,7 @@ def watched_video(request):
     data = {
         'is_taken': True
     }
-    return JsonResponse(data)
+    return JsonResponse(data)"""
 
 
 def get_watched_counter(videoID):
@@ -243,16 +273,23 @@ def generate_video_id():
     return s
 
 
-def get_data_from_video_array(videos, asString=True, isIDs=False):
+def get_data_from_video_ids(videos, asString=True):
+    views = []
+    tags = []
+    vidik = []
+    for video in videos:
+        views.append(get_watched_counter(video))
+        tags.append(get_video_categories(video, asString=asString))
+        vidik.append(Video.objects.get(id=video))
+
+    return zip(vidik, views, tags)
+
+
+def get_data_from_video_array(videos, asString=True):
 
     views = []
     tags = []
     for video in videos:
-        print(video)
-        if isIDs:
-            views.append(get_watched_counter(video))
-            tags.append(get_video_categories(video, asString=asString))
-        else:
             views.append(get_watched_counter(video.id))
             tags.append(get_video_categories(video.id, asString=asString))
 

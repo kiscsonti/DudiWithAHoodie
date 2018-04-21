@@ -10,8 +10,18 @@
                     <div class="text-left">
                         <p>{{ video.title }}</p>
                     </div>
+                    <div>
+                        <img src="{{ video.thumbnail.url }}" class="img-responsive">
+                        
+                    </div>
                     <div class="limit">
-                        <h3>By {{ video.user.username }}</h3>
+                        <h3>By
+                            {% if not video.user %}
+                                deleted user
+                            {% else %}
+                                {{ video.user.username }}
+                            {% endif %}
+                        </h3>
                         <h3>Kategóriák: {{ tags }}</h3>
                         <h3>Megtekintés: {{ views }}</h3>
                     </div>

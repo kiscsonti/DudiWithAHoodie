@@ -10,9 +10,15 @@ import os
 
 # Create your models here.
 
-fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+videofs = FileSystemStorage(location=settings.MEDIA_ROOT)
+imagefs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
-file_formats = ['MOV', 'MPEG4', 'MP4', 'AVI', 'WMV', 'MP3']
+file_formats = ['MOV', 'MPEG4', 'MP4', 'AVI', 'WMV', ]
+image_formats = ['JPG', 'PNG']
+
+# TODO: Most watched by categories
+# TODO: Most active users
+# TODO: Recommend similiar videos
 # TODO: delete MP3 from the file formats, it is only for testing
 
 def validate_file_extension(value):
@@ -21,10 +27,22 @@ def validate_file_extension(value):
         raise ValidationError(u'Not supported extension' + extension + '. Please use ' + file_formats + ' format.')
 
 
+def validate_image_extension(value):
+    extension = value.name.split()[-1]
+    if extension not in image_formats:
+        raise ValidationError(u'Not supported extension' + extension + '. Please use ' + image_formats + ' format.')
+
+
 def name_file_as_videoid(instance, filename):
     ext = filename.split('.')[-1]
     filename = "%s.%s" % (instance.id, ext)
     return os.path.join(filename)
+
+
+def name_image_as_videoid(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = "%s.%s" % (instance.id, ext)
+    return os.path.join("tumbnails", filename)
 
 
 def _delete_file(path):
@@ -33,18 +51,20 @@ def _delete_file(path):
 
 
 class Video(models.Model):
-
     id = models.CharField(max_length=60, primary_key=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=100)
-    filename = models.FileField(storage=fs, default='ERROR', validators=[validate_file_extension], upload_to=name_file_as_videoid)
+    filename = models.FileField(storage=videofs, default='ERROR', validators=[validate_file_extension],
+                                upload_to=name_file_as_videoid)
+    thumbnail = models.ImageField(default="thumbnails/default.jpg", upload_to=name_image_as_videoid, validators=[validate_image_extension])
+    description = models.CharField(max_length=500, blank=True, default="")
     create_date = models.DateField(auto_now_add=True)
     create_time = models.TimeField(auto_now_add=True)
     is_commentable = models.BooleanField(default=True)
 
-
     def __str__(self):
         return self.title
+
 
 class Category(models.Model):
     name = models.CharField(max_length=50)
@@ -71,7 +91,6 @@ class VideoKategoria(models.Model):
     video_id = models.ForeignKey(Video, models.CASCADE)
     kat_id = models.ForeignKey(Category, models.CASCADE)
 
-
     def __str__(self):
         return self.video_id.title + ": " + self.kat_id.name
 
@@ -87,6 +106,7 @@ class Watched(models.Model):
     def __str__(self):
         return self.user.username + ": " + self.video_id.title
 
+
 class Playlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=100, null=False, blank=False)
@@ -94,7 +114,8 @@ class Playlist(models.Model):
     def __str__(self):
         return self.user + ": " + self.title
 
-class list_videos(models.Model):
+
+class ListVideos(models.Model):
     list_id = models.ForeignKey(Playlist, models.CASCADE)
     video_id = models.ForeignKey(Video, models.CASCADE)
 

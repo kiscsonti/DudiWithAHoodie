@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Video, VideoKategoria, Playlist, Watched, Comment, Category, list_videos
+from .models import Video, VideoKategoria, Playlist, Watched, Comment, Category, ListVideos
 # Register your models here.
 
 
@@ -9,4 +9,4 @@ admin.site.register(Playlist)
 admin.site.register(Watched)
 admin.site.register(Comment)
 admin.site.register(Category)
-admin.site.register(list_videos)
+admin.site.register(ListVideos)
