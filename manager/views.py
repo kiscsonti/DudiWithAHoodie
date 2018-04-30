@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from datetime import datetime, timedelta
 from django.db.models import Count
 from django.utils import timezone
+from .utils import get_after_date, get_data_from_video_ids, get_days, get_video_categories, get_watched_counter, generate_video_id, get_data_from_video_array
 import shortuuid
 import json
 
@@ -145,31 +146,6 @@ def show_video(request, videoID):
                   {'videoObject': video, 'owner': owner, 'viewCount': viewCount, 'owned': owned, 'comments': comments})
 
 
-def search(request):
-    query = request.GET.get('q')
-    video_set = set()
-    user_set = set()
-    if query and query != '':
-        splitted = query.split(' ')
-        for item in splitted:
-            video_set.union(list(VideoKategoria.objects.filter(kat_id__name__contains=item).values('video_id__id')))
-            video_set.union(list(Video.objects.filter(title__contains=item).values('id')))
-            user_set.union(list(User.objects.filter(username__contains=item)))
-
-            # video_set = TagToMeme.objects.filter(toTag__name__contains__in=splitted).values('toPost__id')
-            # posts = Post.objects.filter(id=video_set)
-
-        if len(video_set) == 0 and len(user_set) == 0:
-            raise Http404("Nincs ilyen felhasználó, se videó, se kategória")
-        else:
-            videos = []
-            for id in video_set:
-                videos.append(Video.objects.get(id=id))
-    else:
-        return redirect('index')
-    return render(request, 'index.html', {'videos': videos, 'users': user_set, 'searched': query})
-
-
 # TODO: keresés működjön minden opcióra
 def search2(request):
     query = request.GET.get('q')
@@ -191,37 +167,29 @@ def search2(request):
         elif type == "Category":
             items = VideoKategoria.objects.filter(kat_id__name__contains=query).values("video_id__id")
             items = [vidi['video_id__id'] for vidi in items]
-            items = get_data_from_video_ids(items)
 
         elif type == "Title":
             items = Video.objects.filter(title__contains=query).values("id")
             items = [vidi['id'] for vidi in items]
-            items = get_data_from_video_ids(items)
 
         else:
             pass
 
+        if type != "User":
+            how_many_days = get_days(date)
+            items = get_after_date(items, how_many_days)
+
 
     else:
         return redirect('index')
-    return render(request, 'search.html', {'searched': query, 'is_user': is_user, 'items': items})
+    return render(request, 'search.html', {'searched': query,
+                                           'is_user': is_user,
+                                           'items': items,
+                                           'type': type,
+                                           'date': date})
 
 
-# TODO: ez nem kell a jelenlegi verzióba
-def watched(request, videoID, userID):
-    user = User.objects.get(id=userID)
-    video = Video.objects.get(id=videoID)
-    watchedvideo = Watched(user=user, video_id=video)
-    print('That\'s right')
-    watchedvideo.save()
-
-    owner = video.user
-    viewCount = Watched.objects.filter(video_id=videoID).count()
-    owned = (owner == request.user)
-    return redirect('video', videoID=videoID)
-
-
-# TODO: menjen vissza a videó oldalára
+# TODO: menjen vissza a videó oldalára login után
 @login_required(redirect_field_name=None, login_url='/login')
 def edit_video(request, videoID):
     owner = Video.objects.get(id=videoID).user
@@ -269,6 +237,7 @@ def create_playlist(request):
     return render(request, 'create_playlist.html', {'form': form})
 
 
+@login_required(redirect_field_name="/", login_url='/login')
 def add_to_playlist(request):
     video = request.GET.get('video')
     video = Video.objects.get(id=video)
@@ -279,7 +248,9 @@ def add_to_playlist(request):
         if form.is_valid():
             playlist = form.cleaned_data.get('playlists')
             playlist = Playlist.objects.get(id=playlist)
-            listavideo = ListVideos(list_id=playlist, video_id=video)
+
+            listavideo = ListVideos(list_id=playlist, video_id=video, sorszam=(len(ListVideos.objects.filter(list_id=playlist))+1))
+
             listavideo.save()
             return redirect('index', )
     else:
@@ -290,6 +261,7 @@ def add_to_playlist(request):
     pass
 
 
+@login_required(redirect_field_name="/", login_url='/login')
 def play_playlist(request, playlist_id, id):
     
     pass
@@ -335,69 +307,50 @@ def watched_video(request):
     return JsonResponse(data)"""
 
 
-def get_watched_counter(videoID):
-    return Watched.objects.filter(video_id=videoID).count()
-
-
-def get_video_categories(videoID, asString=False):
-    cats = VideoKategoria.objects.filter(video_id__id=videoID).values("kat_id__name")
-    if not asString:
-        cats_as_list = []
-        for cat in cats:
-            cats_as_list.append(cat["kat_id__name"])
-        return cats_as_list
-    else:
-        cats_as_string = ""
-        for i, cat in enumerate(cats):
-            if i:
-                cats_as_string += ", "
-            cats_as_string += cat["kat_id__name"] + " "
-
-        return cats_as_string
-
-
-def generate_video_id():
-    s = shortuuid.uuid()
-    print(s)
-    return s
-
-
-def get_data_from_video_ids(videos, asString=True):
-    views = []
-    tags = []
-    vidik = []
-    for video in videos:
-        views.append(get_watched_counter(video))
-        tags.append(get_video_categories(video, asString=asString))
-        vidik.append(Video.objects.get(id=video))
-
-    return zip(vidik, views, tags)
-
-
-def get_data_from_video_array(videos, asString=True):
-    views = []
-    tags = []
-    for video in videos:
-        views.append(get_watched_counter(video.id))
-        tags.append(get_video_categories(video.id, asString=asString))
-
-    return zip(videos, views, tags)
-
-
-def get_days(date):
-    if date == "Day":
-        return 1
-    elif date == "Month":
-        return 30
-    elif date == "Year":
-        return 365
-    else:
-        return -1
-
-
 """
 def filter_olds(videos):
     vidis = []
     for video in videos:
         v = Video.objects.get(id=video)
+"""
+"""
+# TODO: ez nem kell a jelenlegi verzióba
+def watched(request, videoID, userID):
+    user = User.objects.get(id=userID)
+    video = Video.objects.get(id=videoID)
+    watchedvideo = Watched(user=user, video_id=video)
+    print('Thats right')
+    watchedvideo.save()
+
+    owner = video.user
+    viewCount = Watched.objects.filter(video_id=videoID).count()
+    owned = (owner == request.user)
+    return redirect('video', videoID=videoID)
+"""
+
+
+"""
+def search(request):
+    query = request.GET.get('q')
+    video_set = set()
+    user_set = set()
+    if query and query != '':
+        splitted = query.split(' ')
+        for item in splitted:
+            video_set.union(list(VideoKategoria.objects.filter(kat_id__name__contains=item).values('video_id__id')))
+            video_set.union(list(Video.objects.filter(title__contains=item).values('id')))
+            user_set.union(list(User.objects.filter(username__contains=item)))
+
+            # video_set = TagToMeme.objects.filter(toTag__name__contains__in=splitted).values('toPost__id')
+            # posts = Post.objects.filter(id=video_set)
+
+        if len(video_set) == 0 and len(user_set) == 0:
+            raise Http404("Nincs ilyen felhasználó, se videó, se kategória")
+        else:
+            videos = []
+            for id in video_set:
+                videos.append(Video.objects.get(id=id))
+    else:
+        return redirect('index')
+    return render(request, 'index.html', {'videos': videos, 'users': user_set, 'searched': query,})
 """

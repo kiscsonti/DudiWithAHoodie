@@ -3,7 +3,7 @@
 {% block content %}
     <div class="row ">
         <div id="search-querry" class="pull-right">
-            <form class="navbar-form navbar-left" method="GET" action="">
+            <form id="option_form" class="navbar-form navbar-left" name="options" method="GET" action="">
                 <input type="hidden" name="q" value="{{ searched }}">
                 <div class="form-group">
                       <input type="radio" name="Date" value="Day"> Nap<br>
@@ -20,16 +20,22 @@
                     Mehet
                 </button>
             </form>
+            <div>
+                <a href="{% url 'most_active' %}" class="btn btn-default">Legaktívabb</a>
+            </div>
         </div>
     </div>
     {% if is_user %}
 
         {% for usr in items %}
-
-            <div>
-                <a class="user-link" href="{% url 'profile' user_id=usr.username %}">
+            <div class="row">
+                <div class="col-xs-3 col-md-4" ></div>
+                <div class="col-xs-6 col-md-4 center-block text-center">
+                    <a class="user-link my_user" href="{% url 'profile' user_id=usr.username %}">
                             {{ usr.username }}
                     </a>
+                </div>
+                <div class="col-xs-3 col-md-4"></div>
             </div>
 
         {% endfor %}
@@ -98,5 +104,28 @@
 
     <script type='text/javascript'>
         document.getElementById("search_text").value = "{{ searched }}";
+        if ('{{ type }}' === "User") {
+            document.options.Type[1].checked=true;
+        } else if ('{{ type }}' === "Title"){
+            document.options.Type[2].checked=true;
+        } else {
+            document.options.Type[0].checked=true;
+        }
+
+        if ('{{ date }}' === "Day") {
+            document.options.Date[0].checked=true;
+        } else if ('{{ date }}' === "Month"){
+            document.options.Date[1].checked=true;
+        } else if ('{{ date }}' === "Year"){
+            document.options.Date[2].checked=true;
+        } else {
+            document.options.Date[3].checked=true;
+        }
+
+        $('#option_form').submit(function() {
+            document.options.q.value = document.getElementById("search_text").value;
+            return true; // return false to cancel form action
+        });
+
     </script>
 {% endblock %}

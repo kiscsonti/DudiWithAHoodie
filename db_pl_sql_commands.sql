@@ -1,0 +1,8 @@
+SET SERVEROUTPUT ON
+
+DECLARE
+  max_point NUMBER;
+
+BEGIN
+
+END;

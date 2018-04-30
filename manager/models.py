@@ -60,6 +60,7 @@ class Video(models.Model):
     description = models.CharField(max_length=500, blank=True, default="")
     create_date = models.DateField(auto_now_add=True)
     create_time = models.TimeField(auto_now_add=True)
+    create_datetime = models.DateTimeField(auto_now_add=True)
     is_commentable = models.BooleanField(default=True)
 
     def __str__(self):
@@ -78,6 +79,7 @@ class Comment(models.Model):
     video_id = models.ForeignKey(Video, on_delete=models.CASCADE)
     create_date = models.DateField(auto_now_add=True)
     create_time = models.TimeField(auto_now_add=True)
+    create_datetime = models.DateTimeField(auto_now_add=True)
     content = models.CharField(max_length=500)
 
     def __str__(self):

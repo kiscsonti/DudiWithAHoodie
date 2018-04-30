@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from manager.models import Video, Playlist
 from manager.views import get_watched_counter, get_video_categories
+from manager.utils import user_activity
 
 def temp(request):
     html = "<html><body>Very niice</body></html>"
@@ -41,3 +42,13 @@ def profile(request, user_id):
     print(playlists)
     return render(request, 'profile.html', {'profile': user, 'videos': combined, 'playlists': playlists})
 
+def most_active(request):
+    max_val = 0
+    max_usr = None
+    for usr in User.objects.all():
+        tmp = user_activity(usr)
+        if max_val < tmp:
+            max_val = tmp
+            max_usr = usr
+
+    return redirect('profile', user_id=max_usr.username)
