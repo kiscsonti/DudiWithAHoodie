@@ -4,5 +4,10 @@
 #edit-button {
     position:absolute;
     top:30px;
-    right:-60px;
+    right:-70px;
+}
+#playlist_add{
+    position:absolute;
+    top:80px;
+    right:-70px;
 }

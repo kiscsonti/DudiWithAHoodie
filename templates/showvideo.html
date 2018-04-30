@@ -22,15 +22,36 @@
                         </button>
                     </div>
                 {% endif %}
+
+                <div id="playlist_add" >
+                    <form method="get" action="{% url 'add_to_playlist' %}">
+                        <div class="form-group" title="Lejátszási listára felvesz">
+                            <input type="hidden" name="video" value="{{ videoObject.id }}">
+                            <button type="submit" class="btn btn-light">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
 
             <h2><a href="{% url 'profile' user_id=request.user.username %}">{{ owner.username }}</a></h2>
             <h3 >Megtekintés: <span id="viewer_count">{{viewCount}}</span></h3>
             <p>{{ videoObject.description }}</p>
 
+
+
+
+
+
             <form id="WatchedVideo" action="{% url 'watched' videoID=videoObject.id userID=user.id %}" method="post">
             {% csrf_token %}
             </form>
+
+
+
+
 
         </div>
         <div class="col-xs-3 col-md-4"></div>

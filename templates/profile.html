@@ -3,6 +3,7 @@
 {% block content %}
     <h1>This is the profile page of {{ profile.username }}</h1>
     <div id="videos">
+
     {% for video, views, tags in videos %}
          <div class="row">
             <div class="col-xs-3 col-md-4" ></div>
@@ -17,14 +18,27 @@
                 </a>
             </div>
             <div class="col-xs-3 col-md-4"></div>
-         </div>>
+         </div>
     {% endfor %}
 
     </div>
 
     <div id="playlists">
 
+        {% for list in playlists %}
 
+            <div class="row">
+                <div class="col-xs-3 col-md-4" ></div>
+                <div class="col-xs-6 col-md-4 center-block text-center">
+                    <a href="{% url 'play_playlist' playlist_id=list.id id=0%}">
+                        <h2>{{ list.title }}</h2>
+                        <div>asdasdsad</div>
+                    </a>
+                </div>
+                <div class="col-xs-3 col-md-4"></div>
+            </div>
+
+        {% endfor %}
 
     </div>
 {% endblock %}

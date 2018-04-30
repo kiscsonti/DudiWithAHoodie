@@ -112,11 +112,12 @@ class Playlist(models.Model):
     title = models.CharField(max_length=100, null=False, blank=False)
 
     def __str__(self):
-        return self.user + ": " + self.title
+        return self.user.username + ": " + self.title
 
 
 class ListVideos(models.Model):
     list_id = models.ForeignKey(Playlist, models.CASCADE)
+    sorszam = models.IntegerField(default='9999', )
     video_id = models.ForeignKey(Video, models.CASCADE)
 
     def __str__(self):

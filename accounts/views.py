@@ -37,6 +37,7 @@ def profile(request, user_id):
         tags.append(get_video_categories(video.id, asString=True))
 
     combined = zip(videos, views, tags)
-    playlists = Playlist.objects.filter(user=user)
+    playlists = Playlist.objects.filter(user__username=user)
+    print(playlists)
     return render(request, 'profile.html', {'profile': user, 'videos': combined, 'playlists': playlists})
 

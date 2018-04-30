@@ -43,16 +43,11 @@
                         <span class="glyphicon glyphicon-fire" arid-hidden="true"></span>Hot page
                     </a>
                 </li>
-                <li class="">
-                    <a href="{% url 'index' %}" title="">
-                        <span class="glyphicon glyphicon-option-horizontal" arid-hidden="true"></span>Other
-                    </a>
-                </li>
             </ul>
 
             <form class="navbar-form navbar-left" method="GET" action="{% url 'search' %}">
                 <div class="form-group">
-                    <input type="text" class="form-control" name="q" value="" placeholder="Search...">
+                    <input id="search_text" type="text" class="form-control" name="q" value="" placeholder="Keresés...">
                 </div>
             </form>
 
@@ -60,9 +55,15 @@
 
                 {% if user.is_authenticated %}
 
+                    <li class="">
+                        <a href="{% url 'create_playlist' %}" title="">
+                            <span class="glyphicon glyphicon-plus" arid-hidden="true"></span>Új lejátszásilista
+                        </a>
+                    </li>
+
                      <li class="">
                         <a href="{% url 'add_video' %}" title="">
-                            <span class="glyphicon glyphicon-plus" arid-hidden="true"></span>Add Video
+                            <span class="glyphicon glyphicon-plus" arid-hidden="true"></span>Új video
                         </a>
                     </li>
 
@@ -81,12 +82,12 @@
 
 
                     <li class="">
-                        <a href="{% url 'logout' %}" title="">Logout</a>
+                        <a href="{% url 'logout' %}" title="">Kijelentkezés</a>
                     </li>
 
                 {% else %}
                     <li class="">
-                        <a href="{% url 'login' %}" title="">Login</a>
+                        <a href="{% url 'login' %}" title="">Bejelentkezés</a>
                     </li>
                 {% endif %}
 
