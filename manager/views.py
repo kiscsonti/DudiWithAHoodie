@@ -23,7 +23,7 @@ def index(request):
     # TODO: If you want to visit a site that needs you to be logged in, it should redirect you back to where you were after logging in
 
 
-    video_list = Video.objects.order_by('create_date', 'create_time').reverse()
+    video_list = Video.objects.order_by('create_datetime').reverse()
     page = request.GET.get('page', 1)
     paginator = Paginator(video_list, 5)
     try:
@@ -35,7 +35,7 @@ def index(request):
 
     combined = get_data_from_video_array(videos)
 
-    return render(request, 'index.html', {'videos': combined})
+    return render(request, 'index.html', {'videos': combined, "pagi": videos})
 
 
 @login_required(redirect_field_name="/hot", login_url='/login')
@@ -140,7 +140,7 @@ def show_video(request, videoID):
                 comment = Comment(user=request.user, content=text, video_id=video)
                 comment.save()
 
-    comments = Comment.objects.filter(video_id=videoID).order_by('create_date', 'create_time').reverse()
+    comments = Comment.objects.filter(video_id=videoID).order_by('create_datetime').reverse()
 
     return render(request, 'showvideo.html',
                   {'videoObject': video, 'owner': owner, 'viewCount': viewCount, 'owned': owned, 'comments': comments})

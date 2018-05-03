@@ -9,15 +9,17 @@ image_formats = ['JPG', 'PNG']
 # TODO: delete MP3 from the file formats, it is only for testing
 
 def validate_file_extension(value):
-    extension = value.name.split()[-1].upper()
+    extension = value.name.split(".")[-1].upper()
     if extension not in file_formats:
-        raise ValidationError(u'Not supported extension' + extension + '. Please use ' + file_formats + ' format.')
+        raise ValidationError(u'Not supported extension' + extension + '. Please use ' + str(file_formats) + ' format.')
 
 
 def validate_image_extension(value):
-    extension = value.name.split()[-1]
+    extension = value.name.split(".")[-1].upper()
+    #print("extension: ", extension)
+    #print("all of it: ", value.name.split())
     if extension not in image_formats:
-        raise ValidationError(u'Not supported extension' + extension + '. Please use ' + image_formats + ' format.')
+        raise ValidationError(u'Not supported extension' + extension + '. Please use ' + str(image_formats) + ' format.')
 
 
 class AddVideoForm(forms.Form):

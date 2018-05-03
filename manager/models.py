@@ -58,8 +58,6 @@ class Video(models.Model):
                                 upload_to=name_file_as_videoid)
     thumbnail = models.ImageField(default="thumbnails/default.jpg", upload_to=name_image_as_videoid, validators=[validate_image_extension])
     description = models.CharField(max_length=500, blank=True, default="")
-    create_date = models.DateField(auto_now_add=True)
-    create_time = models.TimeField(auto_now_add=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
     is_commentable = models.BooleanField(default=True)
 
@@ -77,8 +75,6 @@ class Category(models.Model):
 class Comment(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     video_id = models.ForeignKey(Video, on_delete=models.CASCADE)
-    create_date = models.DateField(auto_now_add=True)
-    create_time = models.TimeField(auto_now_add=True)
     create_datetime = models.DateTimeField(auto_now_add=True)
     content = models.CharField(max_length=500)
 
@@ -86,7 +82,7 @@ class Comment(models.Model):
         return self.user.username + ": " + self.video_id.title
 
     class Meta:
-        unique_together = (("user", "video_id", "create_date", "create_time"),)
+        unique_together = (("user", "video_id", "create_datetime"),)
 
 
 class VideoKategoria(models.Model):
