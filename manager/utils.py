@@ -1,4 +1,4 @@
-from .models import Watched, VideoKategoria, Video, Comment
+from .models import Watched, VideoKategoria, Video, Comment, Category
 from django.utils import timezone
 from datetime import datetime, timedelta
 import shortuuid
@@ -77,6 +77,29 @@ def get_data_from_video_array(videos, asString=True):
         tags.append(get_video_categories(video.id, asString=asString))
 
     return zip(videos, views, tags)
+
+
+def recently_watched(user):
+    last_count = 10
+    videos = Video.objects.filter(watched__user=user).order_by("watched__watched_date")
+    return videos[:last_count]
+
+
+def get_not_watched_videos(user, category):
+    videos = Video.objects.all().exclude(watched__user=user).filter(videokategoria__kat_id__name__in=category)
+    return videos
+
+
+def count_category(videos):
+    szotar = dict()
+    for video in videos:
+        category = Category.objects.filter(videokategoria__video_id=video).values("name")
+        for c in category:
+            if c["name"] not in szotar:
+                szotar[c["name"]] = 1
+            else:
+                szotar[c["name"]] += 1
+    return szotar
 
 def user_activity(user):
     video_point = 5

@@ -6,6 +6,7 @@ urlpatterns = [
 
     url(r'^$', views.index, name="main_page"),
     url(r'^search$', views.search2, name='search'),
+    url(r'^similiar$', views.similiar, name='similiar'),
     url(r'^ajax/watched_video$', views.watched_video, name='watched_video'),
     url(r'^playlist/create$', views.create_playlist, name='create_playlist'),
     url(r'^add_to_playlist$', views.add_to_playlist, name='add_to_playlist'),

@@ -11,7 +11,8 @@ from django.http import JsonResponse
 from datetime import datetime, timedelta
 from django.db.models import Count
 from django.utils import timezone
-from .utils import get_after_date, get_data_from_video_ids, get_days, get_video_categories, get_watched_counter, generate_video_id, get_data_from_video_array
+from .utils import get_after_date, get_data_from_video_ids, get_days, get_video_categories, get_watched_counter, \
+    generate_video_id, get_data_from_video_array, recently_watched, count_category, get_not_watched_videos
 import shortuuid
 import json
 
@@ -78,7 +79,7 @@ def hot(request):
     all_video_ids = [vidi['video_id'] for vidi in videos]
     combined = get_data_from_video_ids(all_video_ids)
     # TODO: something is buggy here
-    return render(request, 'hot.html', {'videos': combined})
+    return render(request, 'hot.html', {'videos': combined, "pagi": videos})
 
 
 @login_required(redirect_field_name="/add", login_url='/login')
@@ -249,7 +250,8 @@ def add_to_playlist(request):
             playlist = form.cleaned_data.get('playlists')
             playlist = Playlist.objects.get(id=playlist)
 
-            listavideo = ListVideos(list_id=playlist, video_id=video, sorszam=(len(ListVideos.objects.filter(list_id=playlist))+1))
+            listavideo = ListVideos(list_id=playlist, video_id=video,
+                                    sorszam=(len(ListVideos.objects.filter(list_id=playlist)) + 1))
 
             listavideo.save()
             return redirect('index', )
@@ -263,8 +265,33 @@ def add_to_playlist(request):
 
 @login_required(redirect_field_name="/", login_url='/login')
 def play_playlist(request, playlist_id, id):
-    
     pass
+
+
+@login_required(redirect_field_name="/", login_url='/login')
+def similiar(request):
+    watched_ = recently_watched(request.user)
+    szotar = count_category(watched_)
+    szotar = sorted(szotar.items(), key=lambda x: x[1], reverse=True)
+    # szotar = sorted(szotar, key=szotar.get)
+    most_freq = 3
+    search_categories_list = [item[0] for item in szotar[:most_freq]]
+    print(search_categories_list)
+
+    if len(search_categories_list) == 0:
+        return render(request, 'index.html')
+    video_list = get_not_watched_videos(request.user, search_categories_list)
+    page = request.GET.get('page', 1)
+    paginator = Paginator(video_list, 5)
+    try:
+        videos = paginator.page(page)
+    except PageNotAnInteger:
+        videos = paginator.page(1)
+    except EmptyPage:
+        videos = paginator.page(paginator.num_pages)
+
+    combined = get_data_from_video_array(videos)
+    return render(request, 'index.html', {'videos': combined, "pagi": videos})
 
 
 @csrf_exempt
@@ -306,7 +333,6 @@ def watched_video(request):
     }
     return JsonResponse(data)"""
 
-
 """
 def filter_olds(videos):
     vidis = []
@@ -327,7 +353,6 @@ def watched(request, videoID, userID):
     owned = (owner == request.user)
     return redirect('video', videoID=videoID)
 """
-
 
 """
 def search(request):

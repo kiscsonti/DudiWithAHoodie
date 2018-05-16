@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from manager.models import Video, Playlist
 from manager.views import get_watched_counter, get_video_categories
 from manager.utils import user_activity
+from django.contrib.auth.decorators import login_required
 
 def temp(request):
     html = "<html><body>Very niice</body></html>"
@@ -28,6 +29,7 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
 
 
+@login_required(redirect_field_name="/", login_url='/login')
 def profile(request, user_id):
     user = User.objects.get(username=user_id)
     videos = Video.objects.filter(user=user)
@@ -42,6 +44,8 @@ def profile(request, user_id):
     print(playlists)
     return render(request, 'profile.html', {'profile': user, 'videos': combined, 'playlists': playlists})
 
+
+@login_required(redirect_field_name="/", login_url='/login')
 def most_active(request):
     max_val = 0
     max_usr = None
